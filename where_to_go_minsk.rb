@@ -3,13 +3,10 @@ require 'open-uri'
 require 'nokogiri'
 require 'uri'
 
-token = '441701138:AAF7oYy4ja1yQHcw8JAoaCmEXqvto_jwxrA'
+
 DEFUALT_LINK = 'https://kudago.com'
-
-
 HELP = 'Если не знаешь куда пойти в Минске, напиши тип заведения или развлечения'\
        'и я подскажу тебе пару местечек(Кафе, Ресторан, Бассейн..)'
-
 
 # class for entertainments and places
 
@@ -94,6 +91,7 @@ def suggest_entartainmant(bot, message)
   proposals.map { |e| bot.api.sendMessage(chat_id: message.chat.id, text: e.to_s) }
 end
 
+token = File.open('token_file', 'r'){ |file| file.read }.strip
 
 Telegram::Bot::Client.run(token) do |bot|
   bot.listen do |message|
