@@ -37,18 +37,18 @@ end
 # result: hash with 4 values
 
 def get_hash_item_description post
-  description_div = post.at_css('div[class="post-list-item-description"]')
+  description_block = post.at_css('div[class="post-list-item-description"]')
 
   begin
-    description_div.at_css('address').text.strip
+    description_block.at_css('address').text.strip
   rescue
     return {}
   end
 
   tegs = {
-    'name' => description_div.at_css('h4').text.strip,
-    'address' => address = description_div.at_css('address').text.strip,
-    'description' => description_div.at_css('p').text,
+    'name' => description_block.at_css('h4').text.strip,
+    'address' => address = description_block.at_css('address').text.strip,
+    'description' => description_block.at_css('p').text,
     'image' => DEFUALT_LINK + post.at_css('img')['src']
   }
 end
@@ -77,34 +77,20 @@ def do_request url
   doc = Nokogiri::HTML(html)
 end
 
-=begin
-def parsing_2 doc
-  entertainments = []
-  doc.css('div[class="fs-item-image"]').each do |item|
-    entert = Entertainment.new
-    entert.name = item['title']
-    im = item['style']
-    entert.image = DEFUALT_LINK + im[im.index('(')+1...im.index(')')]
-    puts entert.to_s
-    entertainments.push entert
-  end
-  return entertainments
-end
-def get_random_places bot, message
-  url = 'https://kudago.com/mns/'
-  proposals = do_request url
-  proposals = parsing_2 proposals
-  proposals.map { |e|  bot.api.sendMessage(chat_id: message.chat.id, text: "#{e}") }
-end
-=end
-
 # Gets the client request results from the server and sends them to the client
 # parameters: Bot object, message from Client
 # result: nil
 
 def suggest_entartainmant(bot, message)
-  url = 'https://kudago.com/search/?location=mns&q=' + message.text
+  url = "https://kudago.com/search/?location=mns&q="
+
+  begin
+    url += message.text
+  rescue
+  end
+
   proposals = parsing do_request url
+  proposals = ['Не слышал о таком'] if proposals.empty?
   proposals.map { |e| bot.api.sendMessage(chat_id: message.chat.id, text: e.to_s) }
 end
 
