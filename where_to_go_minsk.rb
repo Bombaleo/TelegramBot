@@ -9,14 +9,13 @@ HELP = 'Если не знаешь куда пойти в Минске, напи
        'и я подскажу тебе пару местечек(Кафе, Ресторан, Бассейн..)'
 
 # class for entertainments and places
-
 class Entertainment
   attr_accessor :name
   attr_accessor :address
   attr_accessor :description
   attr_accessor :image
 
-  def attributs_from_hash hash
+  def attributs_from_hash(hash)
     @name = hash['name']
     @address = hash['address']
     @description = hash['description']
@@ -33,7 +32,7 @@ end
 # parameter: block of html code
 # result: hash with 4 values
 
-def get_hash_item_description post
+def get_hash_item_description(post)
   description_block = post.at_css('div[class="post-list-item-description"]')
 
   begin
@@ -68,22 +67,21 @@ end
 # do request to a server with a parameter url
 # parameter: url
 # result: html doc
-
-def do_request url
-  html = open(URI::encode url)
+def do_request(url)
+  html = open(URI::encode(url))
   doc = Nokogiri::HTML(html)
 end
 
 # Gets the client request results from the server and sends them to the client
 # parameters: Bot object, message from Client
 # result: nil
-
 def suggest_entartainmant(bot, message)
-  url = "https://kudago.com/search/?location=mns&q="
-
+  url = 'https://kudago.com/search/?location=mns&q='
+  proposals = []
   begin
     url += message.text
   rescue
+    proposals.push 'Я не умею с этим работать'
   end
 
   proposals = parsing do_request url
@@ -91,13 +89,13 @@ def suggest_entartainmant(bot, message)
   proposals.map { |e| bot.api.sendMessage(chat_id: message.chat.id, text: e.to_s) }
 end
 
-token = File.open('token_file', 'r'){ |file| file.read }.strip
+token = File.open('token_file', 'r').read.strip
 
 Telegram::Bot::Client.run(token) do |bot|
   bot.listen do |message|
     case message.text
     when '/start'
-      bot.api.sendMessage(chat_id: message.chat.id, text: 'Hello.' + HELP)
+      bot.api.sendMessage(chat_id: message.chat.id, text: 'Привет.' + HELP)
     when '/help'
       bot.api.sendMessage(chat_id: message.chat.id, text: HELP)
     else
