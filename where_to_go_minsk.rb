@@ -2,9 +2,11 @@ require 'telegram/bot'
 require 'open-uri'
 require 'nokogiri'
 require 'uri'
+require 'dotenv'
 
 
 DEFUALT_LINK = 'https://kudago.com'
+SEARCH_URL = 'https://kudago.com/search/?location=mns&q='
 HELP = 'Если не знаешь куда пойти в Минске, напиши тип заведения или развлечения'\
        'и я подскажу тебе пару местечек(Кафе, Ресторан, Бассейн..)'
 
@@ -16,10 +18,10 @@ class Entertainment
   attr_accessor :image
 
   def attributs_from_hash(hash)
-    @name = hash['name']
-    @address = hash['address']
-    @description = hash['description']
-    @image = hash['image']
+    @name = hash[:name]
+    @address = hash[:address]
+    @description = hash[:description]
+    @image = hash[:image]
     return self
   end
 
@@ -41,11 +43,11 @@ def get_hash_item_description(post)
     return {}
   end
 
-  tegs = {
-    'name' => description_block.at_css('h4').text.strip,
-    'address' => address = description_block.at_css('address').text.strip,
-    'description' => description_block.at_css('p').text,
-    'image' => DEFUALT_LINK + post.at_css('img')['src']
+  tags = {
+    :name => description_block.at_css('h4').text.strip,
+    :address => address = description_block.at_css('address').text.strip,
+    :description => description_block.at_css('p').text,
+    :image => DEFUALT_LINK + post.at_css('img')['src']
   }
 end
 
@@ -57,9 +59,9 @@ def parsing(doc)
   entertainments = []
   doc.css('li[class="post-list-item feed-child"]').each do |item|
     hashed_item = get_hash_item_description item
-    entert = Entertainment.new
-    entert.attributs_from_hash(hashed_item)
-    entertainments.push entert unless entert.to_s == "\n\n\n\n"
+    entertainment = Entertainment.new
+    entertainment.attributs_from_hash(hashed_item)
+    entertainments.push entertainment unless entertainment.to_s == "\n\n\n\n"
   end
   return entertainments
 end
@@ -68,7 +70,7 @@ end
 # parameter: url
 # result: html doc
 def do_request(url)
-  html = open(URI::encode(url))
+  html = open(URI:: encode(url))
   doc = Nokogiri::HTML(html)
 end
 
@@ -76,20 +78,21 @@ end
 # parameters: Bot object, message from Client
 # result: nil
 def suggest_entartainmant(bot, message)
-  url = 'https://kudago.com/search/?location=mns&q='
   proposals = []
+  searching_value = ''
   begin
-    url += message.text
+    searching_value = message.text
   rescue
     proposals.push 'Я не умею с этим работать'
   end
 
-  proposals = parsing do_request url
+  proposals = parsing do_request SEARCH_URL + searching_value
   proposals = ['Не слышал о таком'] if proposals.empty?
   proposals.map { |e| bot.api.sendMessage(chat_id: message.chat.id, text: e.to_s) }
 end
 
-token = File.open('token_file', 'r').read.strip
+Dotenv.load
+token = ENV['TOKEN']
 
 Telegram::Bot::Client.run(token) do |bot|
   bot.listen do |message|
