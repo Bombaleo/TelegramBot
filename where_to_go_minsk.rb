@@ -17,7 +17,7 @@ class Entertainment
   attr_accessor :description
   attr_accessor :image
 
-  def attributs_from_hash(hash)
+  def attributes_from_hash(hash)
     @name = hash[:name]
     @address = hash[:address]
     @description = hash[:description]
@@ -60,7 +60,7 @@ def parsing(doc)
   doc.css('li[class="post-list-item feed-child"]').each do |item|
     hashed_item = get_hash_item_description item
     entertainment = Entertainment.new
-    entertainment.attributs_from_hash(hashed_item)
+    entertainment.attributes_from_hash(hashed_item)
     entertainments.push entertainment unless entertainment.to_s == "\n\n\n\n"
   end
   entertainments
