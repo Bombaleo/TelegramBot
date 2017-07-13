@@ -22,7 +22,7 @@ class Entertainment
     @address = hash[:address]
     @description = hash[:description]
     @image = hash[:image]
-    return self
+    self
   end
 
   def to_s
@@ -43,7 +43,7 @@ def get_hash_item_description(post)
     return {}
   end
 
-  tags = {
+  {
     :name => description_block.at_css('h4').text.strip,
     :address => address = description_block.at_css('address').text.strip,
     :description => description_block.at_css('p').text,
@@ -63,7 +63,7 @@ def parsing(doc)
     entertainment.attributs_from_hash(hashed_item)
     entertainments.push entertainment unless entertainment.to_s == "\n\n\n\n"
   end
-  return entertainments
+  entertainments
 end
 
 # do request to a server with a parameter url
@@ -71,7 +71,7 @@ end
 # result: html doc
 def do_request(url)
   html = open(URI:: encode(url))
-  doc = Nokogiri::HTML(html)
+  Nokogiri::HTML(html)
 end
 
 # Gets the client request results from the server and sends them to the client
